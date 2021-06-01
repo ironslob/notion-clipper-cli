@@ -31,6 +31,8 @@ use std::process;
     - load by default
 */
 
+static CONFY_NAME: &str = "notion_clipper";
+
 #[derive(Serialize, Deserialize, Debug)]
 struct NotionConfig {
     access_secret: String,
@@ -167,7 +169,7 @@ Will add two new Notion pages to the configured Notion database.
 fn configure_and_save(existing: &NotionConfig) -> NotionConfig {
     let cfg: NotionConfig = configure(&existing);
 
-    confy::store("notion_clipper", &cfg).expect("fsck");
+    confy::store(CONFY_NAME, &cfg).expect("fsck");
 
     return cfg;
 }
@@ -377,7 +379,7 @@ fn main() {
         process::exit(1);
     }
 
-    let mut cfg: NotionConfig = match confy::load("notion_clipper") {
+    let mut cfg: NotionConfig = match confy::load(CONFY_NAME) {
         Ok(cfg) => cfg,
         _ => {
             println!("*** Problems loading previous config, starting over ***");
