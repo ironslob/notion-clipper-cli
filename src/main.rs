@@ -162,11 +162,6 @@ fn create_page(cfg: &NotionConfig, title: &String) {
     let mut properties: HashMap<String, NotionDatabaseProperty> = HashMap::new();
     properties.insert(cfg.title_property.clone(), NotionDatabaseProperty {
         _type: String::from("title"),
-        date: None,
-        id: None,
-        multi_select: None,
-        rich_text: None,
-        text: None,
         title: Some(vec![
             title_prop,
         ]),

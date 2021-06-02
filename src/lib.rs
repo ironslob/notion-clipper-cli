@@ -15,20 +15,6 @@ pub struct NotionPage {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct NotionAnnotations {
-    pub bold: Option<bool>,
-    pub italic: Option<bool>,
-    pub strikethrough: Option<bool>,
-    pub underline: Option<bool>,
-    pub code: Option<bool>,
-    //color: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NotionUrl {
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct NotionText {
     pub content: Option<String>,
 }
@@ -41,36 +27,10 @@ pub struct NotionTitle {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct NotionDatabaseDate {
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NotionOption {
-    pub color: Option<String>,
-    pub id: Option<String>,
-    pub name: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NotionSelect {
-    pub options: Option<Vec<NotionOption>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct NotionMultiSelect {
-    pub options: Option<Vec<NotionOption>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct NotionDatabaseProperty {
-    pub id: Option<String>,
     #[serde(rename="type")]
     pub _type: String,
-    pub date: Option<NotionDatabaseDate>,
-    pub multi_select: Option<NotionMultiSelect>,
     pub title: Option<Vec<NotionTitle>>,
-    pub text: Option<NotionText>,
-    pub rich_text: Option<NotionRichText>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -80,9 +40,6 @@ pub struct NotionRichText {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NotionDatabase {
-    pub created_time: String,
-    pub last_edited_time: String,
-    pub object: String,
     pub id: String,
     pub title: Vec<NotionRichText>,
     pub properties: HashMap<String, NotionDatabaseProperty>,
