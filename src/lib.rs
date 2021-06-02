@@ -11,7 +11,7 @@ pub struct NotionParent {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NotionPage {
     pub parent: NotionParent,
-    pub properties: HashMap<String, NotionDatabaseProperty>,
+    pub properties: HashMap<String, NotionPageProperty>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -26,11 +26,20 @@ pub struct NotionTitle {
     pub text: Option<NotionText>,
 }
 
+// FIXME notion api returns "{}" as the empty title property, but expects an array if there's
+// value. i'm not sure how to handle that.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NotionPageProperty {
+    #[serde(rename="type")]
+    pub _type: String,
+    pub title: Option<Vec<NotionTitle>>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NotionDatabaseProperty {
     #[serde(rename="type")]
     pub _type: String,
-    pub title: Option<Vec<NotionTitle>>,
+    //pub title: Option<Vec<NotionTitle>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -66,7 +75,6 @@ impl NotionDatabase {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NotionDatabaseList {
-    pub object: String,
     pub results: Vec<NotionDatabase>,
     pub next_cursor: Option<String>,
     pub has_more: bool,

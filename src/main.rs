@@ -10,6 +10,7 @@ use notion_clipper_cli::NotionPage;
 use notion_clipper_cli::NotionParent;
 use notion_clipper_cli::NotionConfig;
 use notion_clipper_cli::NotionDatabase;
+use notion_clipper_cli::NotionPageProperty;
 use notion_clipper_cli::NotionDatabaseProperty;
 use notion_clipper_cli::NotionText;
 use notion_clipper_cli::NotionTitle;
@@ -85,17 +86,8 @@ To access your Notion account we need an integration access token, follow these 
 You will now be presented with information about your new integration, including a \"Internal Integration Token\". Click \"Show\" next to this, then \"Copy\", and paste the full string below.
 ");
 
-    print!("> ");
-
-    // flushing, not gonna worry about errors here
-    io::stdout().flush().unwrap();
-
-    let mut secret = String::new();
-    io::stdin()
-        .read_line(&mut secret)
-        .expect("Failed to read");
-
-    secret = secret.trim().to_string();
+    let mut rl = rustyline::Editor::<()>::new();
+    let secret = rl.readline_with_initial("> ", (&existing.access_secret, "")).unwrap();
 
     println!("
 Great, now I'm going to pull a list of databases so we can decide which one we want to add to.
@@ -118,19 +110,18 @@ Great, now I'm going to pull a list of databases so we can decide which one we w
 }
 
 fn choose_database(databases: &Vec<NotionDatabase>) -> &NotionDatabase {
-    println!("Found {} databases, please choose one:", databases.len());
+    println!("Found {} databases, please choose one:\n", databases.len());
 
     for index in 0..databases.len() {
         println!("[{}] - {} ({})", index, databases[index].title_text(), databases[index].id);
     }
 
+    println!("");
+
+    let mut rl = rustyline::Editor::<()>::new();
+
     loop {
-        print!("Enter number > ");
-        io::stdout().flush().unwrap();
-
-        let mut entry = String::new();
-        io::stdin().read_line(&mut entry).unwrap();
-
+        let entry = rl.readline("Enter number > ").unwrap();
         let entry_id: usize = match entry.trim().parse() {
             Ok(num) => num,
             Err(_) => {
@@ -159,8 +150,9 @@ fn create_page(cfg: &NotionConfig, title: &String) {
             content: Some(title.clone()),
         }),
     };
-    let mut properties: HashMap<String, NotionDatabaseProperty> = HashMap::new();
-    properties.insert(cfg.title_property.clone(), NotionDatabaseProperty {
+
+    let mut properties: HashMap<String, NotionPageProperty> = HashMap::new();
+    properties.insert(cfg.title_property.clone(), NotionPageProperty {
         _type: String::from("title"),
         title: Some(vec![
             title_prop,
