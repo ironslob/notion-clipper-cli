@@ -1,4 +1,3 @@
-use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::io;
 use std::io::Write;
@@ -10,11 +9,11 @@ use std::process;
 use notion_clipper_cli::NotionPage;
 use notion_clipper_cli::NotionParent;
 use notion_clipper_cli::NotionConfig;
+use notion_clipper_cli::NotionDatabase;
 use notion_clipper_cli::NotionDatabaseProperty;
 use notion_clipper_cli::NotionText;
 use notion_clipper_cli::NotionTitle;
 use notion_clipper_cli::NotionDatabaseList;
-use notion_clipper_cli::Database;
 
 /*
 - config loading (or defaulting)
@@ -50,9 +49,7 @@ fn configure_and_save(existing: &NotionConfig) -> NotionConfig {
     return cfg;
 }
 
-fn get_databases(secret_token: &String) -> Vec<Database> {
-    let mut databases: Vec<Database> = Vec::new();
-
+fn get_databases(secret_token: &String) -> Vec<NotionDatabase> {
     let url = "https://api.notion.com/v1/databases";
 
     // TODO must add error response checking via Result
@@ -71,40 +68,7 @@ fn get_databases(secret_token: &String) -> Vec<Database> {
 
     let json_body: NotionDatabaseList = serde_json::from_str(body.as_str()).unwrap();
 
-    let results = json_body.results;
-
-    for result in results.iter() {
-        let database_id = result.id.clone();
-        let title = result.title[0].plain_text.clone();
-        let mut title_prop: String = String::new();
-
-        for (key, prop) in result.properties.iter() {
-            if prop._type == "title" {
-                title_prop = key.clone();
-                break;
-            }
-        }
-
-        /*
-        let database_id = result.get("id").unwrap().to_string();
-        let title =  result
-            .get("title")
-            .unwrap()
-            .get(0)
-            .unwrap()
-            .get("plain_text")
-            .unwrap()
-            .to_string();
-        */
-
-        databases.push(Database {
-            id: database_id,
-            title: title.unwrap(),
-            title_property: title_prop,
-        });
-    }
-
-    return databases;
+    return json_body.results;
 }
 
 fn configure(existing: &NotionConfig) -> NotionConfig {
@@ -144,7 +108,7 @@ Great, now I'm going to pull a list of databases so we can decide which one we w
     let database = choose_database(&databases);
 
     let database_id = database.id.clone();
-    let title_property = database.title_property.clone();
+    let title_property = database.title_property();
 
     NotionConfig {
         access_secret: secret,
@@ -153,11 +117,11 @@ Great, now I'm going to pull a list of databases so we can decide which one we w
     }
 }
 
-fn choose_database(databases: &Vec<Database>) -> &Database {
+fn choose_database(databases: &Vec<NotionDatabase>) -> &NotionDatabase {
     println!("Found {} databases, please choose one:", databases.len());
 
     for index in 0..databases.len() {
-        println!("[{}] - {} ({})", index, databases[index].title, databases[index].id);
+        println!("[{}] - {} ({})", index, databases[index].title_text(), databases[index].id);
     }
 
     loop {

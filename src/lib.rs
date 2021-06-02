@@ -89,11 +89,11 @@ pub struct NotionDatabase {
 }
 
 impl NotionDatabase {
-    fn title_text(&self) -> String {
+    pub fn title_text(&self) -> String {
         return self.title[0].plain_text.clone().unwrap();
     }
 
-    fn title_property(&self) -> String {
+    pub fn title_property(&self) -> String {
         let mut title_prop: String = String::new();
 
         for (key, prop) in self.properties.iter() {
@@ -113,14 +113,6 @@ pub struct NotionDatabaseList {
     pub results: Vec<NotionDatabase>,
     pub next_cursor: Option<String>,
     pub has_more: bool,
-}
-
-
-#[derive(Debug)]
-pub struct Database {
-    pub id: String,
-    pub title: String,
-    pub title_property: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
