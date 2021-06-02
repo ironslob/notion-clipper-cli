@@ -1,5 +1,5 @@
 [package]
-name = "notion-clipper-cli"
+name = "notion_clipper_cli"
 version = "0.1.0"
 authors = ["Matt Wilson <codebrewery@gmail.com>"]
 edition = "2018"

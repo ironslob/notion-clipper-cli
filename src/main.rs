@@ -7,6 +7,15 @@ use reqwest::header;
 use std::env;
 use std::process;
 
+use notion_clipper_cli::NotionPage;
+use notion_clipper_cli::NotionParent;
+use notion_clipper_cli::NotionConfig;
+use notion_clipper_cli::NotionDatabaseProperty;
+use notion_clipper_cli::NotionText;
+use notion_clipper_cli::NotionTitle;
+use notion_clipper_cli::NotionDatabaseList;
+use notion_clipper_cli::Database;
+
 /*
 - config loading (or defaulting)
     - add confy crate
@@ -33,139 +42,6 @@ use std::process;
 
 static CONFY_NAME: &str = "notion_clipper";
 
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionConfig {
-    access_secret: String,
-    database_id: String,
-    title_property: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionParent {
-    #[serde(rename="type")]
-    _type: String,
-    database_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionPage {
-    parent: NotionParent,
-    properties: HashMap<String, NotionDatabaseProperty>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionAnnotations {
-    bold: Option<bool>,
-    italic: Option<bool>,
-    strikethrough: Option<bool>,
-    underline: Option<bool>,
-    code: Option<bool>,
-    //color: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionUrl {
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionText {
-    content: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionTitle {
-    #[serde(rename="type")]
-    _type: String,
-    text: Option<NotionText>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionDatabaseDate {
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionOption {
-    color: Option<String>,
-    id: Option<String>,
-    name: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionSelect {
-    options: Option<Vec<NotionOption>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionMultiSelect {
-    options: Option<Vec<NotionOption>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionDatabaseProperty {
-    id: Option<String>,
-    #[serde(rename="type")]
-    _type: String,
-    date: Option<NotionDatabaseDate>,
-    multi_select: Option<NotionMultiSelect>,
-    title: Option<Vec<NotionTitle>>,
-    text: Option<NotionText>,
-    rich_text: Option<NotionRichText>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionRichText {
-    plain_text: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionDatabase {
-    created_time: String,
-    last_edited_time: String,
-    object: String,
-    id: String,
-    title: Vec<NotionRichText>,
-    properties: HashMap<String, NotionDatabaseProperty>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct NotionDatabaseList {
-    object: String,
-    results: Vec<NotionDatabase>,
-    next_cursor: Option<String>,
-    has_more: bool,
-}
-
-impl Default for NotionConfig {
-    fn default() -> Self {
-        NotionConfig {
-            access_secret: String::from(""),
-            database_id: String::from(""),
-            title_property: String::from(""),
-        }
-    }
-}
-
-fn help(cmd: &String) {
-    println!("\
-{} [option]
-
-Command line tool to quickly add items to a Notion database. Will only set the title of the new
-page, no properties.
-
-Options include:
-
-    help      - this page
-    configure - updates values for Notion database access
-    *         - add content to Notion
-
-All other parameters will be added to the configured Notion database as individual pages.
-
-e.g. $ {} \"Chocolate hobnobs\" \"Beer\"
-
-Will add two new Notion pages to the configured Notion database.
-", cmd, cmd);
-}
-
 fn configure_and_save(existing: &NotionConfig) -> NotionConfig {
     let cfg: NotionConfig = configure(&existing);
 
@@ -173,14 +49,6 @@ fn configure_and_save(existing: &NotionConfig) -> NotionConfig {
 
     return cfg;
 }
-
-#[derive(Debug)]
-struct Database {
-    id: String,
-    title: String,
-    title_property: String,
-}
-
 
 fn get_databases(secret_token: &String) -> Vec<Database> {
     let mut databases: Vec<Database> = Vec::new();
@@ -375,7 +243,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        help(&args[0]);
+        notion_clipper_cli::help(&args[0]);
         process::exit(1);
     }
 
@@ -403,7 +271,7 @@ fn main() {
             configure_and_save(&cfg);
         }
     } else if args[1] == "help" {
-        help(&args[0]);
+        notion_clipper_cli::help(&args[0]);
     } else {
         for index in 1..args.len() {
             create_page(&cfg, &args[index]);
